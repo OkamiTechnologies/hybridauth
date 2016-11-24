@@ -264,7 +264,7 @@ class OAuth2Template extends AbstractAdapter implements AdapterInterface
 	/**
 	* ...
 	*/
-	function signedRequest( $uri, $method = Request::GET, $parameters = array() )
+	function signedRequest( $uri, $method = Request::GET, $parameters = array(), $headers = array() )
 	{
 		if ( strrpos($uri, 'http://') !== 0 && strrpos($uri, 'https://') !== 0 ){
 			$uri = $this->endpoints->baseUri . $uri;
@@ -275,10 +275,10 @@ class OAuth2Template extends AbstractAdapter implements AdapterInterface
 		}
 
 		switch( $method ){
-			case Request::GET    : $this->httpClient->get    ( $uri, $parameters ); break;
-			case Request::POST   : $this->httpClient->post   ( $uri, $parameters ); break;
-			case Request::PUT    : $this->httpClient->put    ( $uri, $parameters ); break;
-			case Request::DELETE : $this->httpClient->delete ( $uri, $parameters ); break;
+			case Request::GET    : $this->httpClient->get    ( $uri, $parameters, $headers ); break;
+			case Request::POST   : $this->httpClient->post   ( $uri, $parameters, $headers ); break;
+			case Request::PUT    : $this->httpClient->put    ( $uri, $parameters, $headers ); break;
+			case Request::DELETE : $this->httpClient->delete ( $uri, $parameters, $headers ); break;
 		}
 
 		return $this->httpClient->getResponseBody();
