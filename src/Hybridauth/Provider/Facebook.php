@@ -55,16 +55,16 @@ class Facebook extends OAuth2Template
 		$this->letApplicationSecret( $this->getAdapterConfig( 'keys', 'secret' ) );
 
 		// @ todo create a way to track scope & request addtl scope as needed
-		$scope = $this->getAdapterConfig( 'scope' )
-			? $this->getAdapterConfig( 'scope' )
+		$scope = $this->getAdapterConfig('scope')
+			? $this->getAdapterConfig('scope')
 			: 'email,user_about_me,user_birthday,user_hometown,user_website,read_stream,offline_access,publish_stream,read_friendlists';
 
 		$this->letApplicationScope( $scope );
 
 		$this->letEndpointRedirectUri( $this->getHybridauthEndpointUri() );
-		$this->letEndpointBaseUri( 'https://graph.facebook.com/' );
-		$this->letEndpointAuthorizeUri( 'https://www.facebook.com/dialog/oauth' );
-		$this->letEndpointRequestTokenUri( 'https://graph.facebook.com/oauth/access_token' );
+		$this->letEndpointBaseUri( 'https://graph.facebook.com/v2.3/' );
+		$this->letEndpointAuthorizeUri( 'https://www.facebook.com/v2.3/dialog/oauth' );
+		$this->letEndpointRequestTokenUri( 'https://graph.facebook.com/v2.3/oauth/access_token' );
 
 		$this->letEndpointAuthorizeUriAdditionalParameters( array( 'display' => 'page' ) );
 	}
