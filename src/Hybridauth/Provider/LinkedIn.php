@@ -8,15 +8,16 @@
 namespace Hybridauth\Provider;
 
 use Hybridauth\Exception;
-use Hybridauth\Adapter\Template\OAuth1\OAuth1Template;
-use Hybridauth\Entity\Profile;
+use Hybridauth\Http\Request;
+use Hybridauth\Adapter\Template\OAuth2\OAuth2Template;
+use Hybridauth\Entity\Linkedin\Profile;
 
 /**
 * LinkedIn adapter extending OAuth1 Template
 *
 * http://hybridauth.sourceforge.net/userguide/IDProvider_info_LinkedIn.html
 */
-class LinkedIn extends OAuth1Template
+class LinkedIn extends OAuth2Template
 {
 	/**
 	* Internal: Initialize adapter. This method isn't intended for public consumption.
@@ -29,18 +30,19 @@ class LinkedIn extends OAuth1Template
 	{
 		parent::initialize();
 
-		$this->letApplicationKey( $this->getAdapterConfig( 'keys', 'key' ) );
+		$this->letApplicationId( $this->getAdapterConfig( 'keys', 'key' ) );
 		$this->letApplicationSecret( $this->getAdapterConfig( 'keys', 'secret' ) );
 
 		$scope = $this->getAdapterConfig( 'scope' ) 
 			? $this->getAdapterConfig( 'scope' ) 
 			: 'r_basicprofile+r_emailaddress+rw_nus';
 
+		$this->setApplicationScope( $scope );
 		$this->letEndpointRedirectUri( $this->getHybridauthEndpointUri() );
-		$this->letEndpointBaseUri( 'https://api.linkedin.com' );
-		$this->letEndpointAuthorizeUri( 'https://www.linkedin.com/uas/oauth/authenticate' );
-		$this->letEndpointRequestTokenUri( 'https://api.linkedin.com/uas/oauth/requestToken?scope=' . $scope );
-		$this->letEndpointAccessTokenUri( 'https://api.linkedin.com/uas/oauth/accessToken' ); 
+		$this->letEndpointBaseUri( 'https://api.linkedin.com/v1' );
+		$this->letEndpointAuthorizeUri( 'https://www.linkedin.com/oauth/v2/authorization');
+		$this->letEndpointRequestTokenUri( 'https://www.linkedin.com/oauth/v2/accessToken');
+		//$this->letEndpointAccessTokenUri( 'https://api.linkedin.com/uas/oauth/accessToken' ); 
 	}
 
 	// --------------------------------------------------------------------
@@ -54,9 +56,21 @@ class LinkedIn extends OAuth1Template
 	*/
 	function getUserProfile()
 	{
-		/// ToDo
+		$response = $this->signedRequest( '/people/~:(id,first-name,last-name,email-address)', Request::GET,
+			['format' => 'json'], ['Authorization' => 'Authorization: Bearer ' . $this->tokens->accessToken ] );
+		$response = json_decode ( $response );
 
-		throw new Exception( "Unsupported", Exception::UNSUPPORTED_FEATURE, null, $this );
+		if ( ! isset( $response->id ) || isset ( $response->error ) ){
+			throw new
+				Exception(
+					'User profile request failed: Provider returned an invalid response. ' .
+					'HTTP client state: (' . $this->httpClient->getState() . ')',
+					Exception::USER_PROFILE_REQUEST_FAILED,
+					$this
+				);
+		}
+
+		return Profile::generateFromResponse($response,$this);
 	}
 
 	// --------------------------------------------------------------------
